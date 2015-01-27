@@ -49,6 +49,7 @@ func GetIssue(issueKey string) (*Issue, error) {
 	}
 }
 
+// Assign issue to another name
 func (issue *Issue) Assignee(name string) error {
 	params := make(map[string]string)
 	params["name"] = name
@@ -66,7 +67,8 @@ func (issue *Issue) Assignee(name string) error {
 	}
 }
 
-func (issue *Issue) GetWorklog() (*Worklogs, error) {
+// Get all worklogs of issue
+func (issue *Issue) GetWorklogs() (*Worklogs, error) {
 	url := fmt.Sprintf("%s/issue/%s/worklog", BaseUrl, issue.Key)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
@@ -81,6 +83,42 @@ func (issue *Issue) GetWorklog() (*Worklogs, error) {
 	}
 }
 
+// Get worklog of issue by ID
+func (issue *Issue) GetWorklog(id int) (*Worklog, error) {
+	url := fmt.Sprintf("%s/issue/%s/worklog/%d", BaseUrl, issue.Key, id)
+	code, body := execRequest("GET", url, nil)
+	if code == http.StatusOK {
+		var jiraWorklog Worklog
+		err := json.Unmarshal(body, &jiraWorklog)
+		if err != nil {
+			return nil, err
+		}
+		return &jiraWorklog, nil
+	} else {
+		return nil, handleJiraError(body)
+	}
+}
+
+// Logging work in issue with comment
+func (issue *Issue) SetWorklog(timeSpent, comment string) error {
+	worklog := make(map[string]string)
+	worklog["timeSpent"] = timeSpent
+	worklog["comment"] = comment
+	b, err := json.Marshal(worklog)
+	if err != nil {
+		return err
+	}
+	buff := bytes.NewBuffer(b)
+	url := fmt.Sprintf("%s/issue/%s/worklog", BaseUrl, issue.Key)
+	code, body := execRequest("POST", url, buff)
+	if code == http.StatusCreated {
+		return nil
+	} else {
+		return handleJiraError(body)
+	}
+}
+
+// Return available transitions for issue
 func (issue *Issue) GetTransitions() (*Transitions, error) {
 	url := fmt.Sprintf("%s/issue/%s/transitions", BaseUrl, issue.Key)
 	code, body := execRequest("GET", url, nil)
@@ -107,6 +145,7 @@ func (issue *Issue) SetTransition(transition io.Reader) error {
 
 }
 
+// Return all comments for issue
 func (issue *Issue) GetComments() (*Comments, error) {
 	url := fmt.Sprintf("%s/issue/%s/comment", BaseUrl, issue.Key)
 	code, body := execRequest("GET", url, nil)
@@ -122,6 +161,7 @@ func (issue *Issue) GetComments() (*Comments, error) {
 	}
 }
 
+// Return one comment by ID
 func (issue *Issue) GetComment(id int) (*Comment, error) {
 	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseUrl, issue.Key, id)
 	code, body := execRequest("GET", url, nil)
@@ -137,6 +177,7 @@ func (issue *Issue) GetComment(id int) (*Comment, error) {
 	}
 }
 
+// Add comment in issue
 func (issue *Issue) SetComment(comment io.Reader) (*Comment, error) {
 	url := fmt.Sprintf("%s/issue/%s/comment", BaseUrl, issue.Key)
 	code, body := execRequest("POST", url, comment)
@@ -152,6 +193,7 @@ func (issue *Issue) SetComment(comment io.Reader) (*Comment, error) {
 	}
 }
 
+// Update existing comment by id
 func (issue *Issue) UpdateComment(id int, comment io.Reader) (*Comment, error) {
 	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseUrl, issue.Key, id)
 	code, body := execRequest("PUT", url, comment)
@@ -167,6 +209,7 @@ func (issue *Issue) UpdateComment(id int, comment io.Reader) (*Comment, error) {
 	}
 }
 
+// Remove comment from issue
 func (issue *Issue) DeleteComment(id int) error {
 	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseUrl, issue.Key, id)
 	code, body := execRequest("DELETE", url, nil)
@@ -176,16 +219,3 @@ func (issue *Issue) DeleteComment(id int) error {
 		return handleJiraError(body)
 	}
 }
-
-/*
-func UpdateIssue(params io.Reader, issueTag string) (int, []byte) {
-	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issueTag)
-	return execRequest("PUT", url, params)
-}
-
-func DeleteIssue(issueTag string) (int, []byte) {
-	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issueTag)
-	return execRequest("DELETE", url, nil)
-}
-
-*/
