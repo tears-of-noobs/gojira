@@ -93,7 +93,7 @@ fmt.Println("Comment deleted")
                                                                                                                                      
 # TODO's                                                                                                                             
                                                                                                                                      
- - ####Documentaton                                                                                                                  
- - ####Write tests                                                                                                                   
- - ####Huge coverage                                                                                                                 
+ - #### Documentaton                                                                                                                  
+ - #### Write tests                                                                                                                   
+ - #### Huge coverage                                                                                                                 
                                               
