@@ -90,6 +90,21 @@ if err != nil {
     }                                                                                                                                
 fmt.Println("Comment deleted")                                                                                                       
 ```                                                                                                                                  
+
+
+#### Logging work
+```
+issue, err := gojira.GetIssue("TEST-123")                                                                                            
+if err != nil {                                                                                                                      
+    fmt.Printf("%s\n", err)                                                                                                          
+    os.Exit(1)                                                                                                                       
+    }                                                                                                                                
+err := issue.SetWorklog("1h 30m", "I`m working")
+if err != nil {                                                                                                                      
+    fmt.Printf("%s\n", err)                                                                                                          
+    os.Exit(1)                                                                                                                       
+    }                                                                                                                                
+```
                                                                                                                                      
 # TODO's                                                                                                                             
                                                                                                                                      
