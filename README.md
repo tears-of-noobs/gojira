@@ -19,6 +19,25 @@ gojira.BaseUrl = "http://JIRA_URL/rest/api/2"
                                                                                                                                      
 # Examples                                                                                                                           
                                                                                                                                      
+#### Searching
+```
+jqlString := "project%20%3D%20TEST"%20AND%20assignee%20%3D%20USERNAME%20order%20by%20key%20DESC"
+result, err := gojira.RawSearch(jqlString)
+if err != nil {
+    fmt.Println(err)
+    }
+var jiraIssues gojira.JiraSearchIssue
+err = json.Unmarshal(result, &jiraIssues)
+if err != nil {
+    fmt.Println(err)
+    }
+for _, issue := range jiraIssues.Issues {
+    fmt.Printf("%15s %13s %s\n", issue.Key,
+         issue.Fields.Status.Name, issue.Fields.Summary)
+    }
+
+```
+
 #### Get issue by issue key and view all comments:                                                                                   
 ```                                                                                                                                  
 issue, err := gojira.GetIssue("TEST-123")                                                                                            
