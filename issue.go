@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 )
 
 func handleJiraError(body []byte) error {
@@ -16,7 +15,7 @@ func handleJiraError(body []byte) error {
 	if err != nil {
 		return err
 	}
-	return errors.New(strings.Join(errorAnswer.ErrorMessages, " "))
+	return errors.New(errorAnswer.String())
 }
 
 func CreateIssue(params io.Reader) (*Issue, error) {

@@ -1,8 +1,14 @@
 package gojira
 
+import "strings"
+
 type ApiError struct {
 	ErrorMessages []string    `json:"errorMessages"`
 	Errors        interface{} `json:"errors"`
+}
+
+func (e ApiError) String() string {
+	return strings.Join(e.ErrorMessages, " ")
 }
 
 type JiraSearchIssues struct {
