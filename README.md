@@ -2,15 +2,15 @@
 Simple Atlassian JIRA API client implementation                                                                                      
                                                                                                                                      
 # Usage                                                                                                                              
-* #### Install package                                                                                                               
+* Install package                                                                                                               
 ``` sh                                                                                                                               
 go get github.com/tears-of-noobs/gojira                                                                                              
 ```                                                                                                                                  
-* #### Import in you source code                                                                                                     
+* Import in you source code                                                                                                     
 ```go                                                                                                                                
 import "github.com/tears-of-noobs/gojira"                                                                                            
 ```                                                                                                                                  
-* #### Set initial parameters                                                                                                        
+* Set initial parameters                                                                                                        
 ```go                                                                                                                                
 gojira.Username = "USERNAME"                                                                                                         
 gojira.Password = "PASSWORD"                                                                                                         
@@ -93,7 +93,7 @@ fmt.Println("Comment deleted")
                                                                                                                                      
 # TODO's                                                                                                                             
                                                                                                                                      
- - ####Documentaton                                                                                                                  
- - ####Write tests                                                                                                                   
- - ####Huge coverage                                                                                                                 
+ - Documentaton                                                                                                                  
+ - Write tests                                                                                                                   
+ - Huge coverage                                                                                                                 
                                               
