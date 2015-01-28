@@ -18,9 +18,20 @@ type Groups struct {
 	Items []map[string]string `json:"items"`
 }
 
+// Return User structure of logged in Jira user
 func Myself() (*User, error) {
 	url := fmt.Sprintf("%s/myself", BaseUrl)
-	code, body := execRequest("GET", url, nil)
+	return getUserHelper(execRequest("GET", url, nil))
+}
+
+// Get user structure by username
+func GetUser(name string) (*User, error) {
+	url := fmt.Sprintf("%s/user?%s", BaseUrl, name)
+	return getUserHelper(execRequest("GET", url, nil))
+
+}
+
+func getUserHelper(code int, body []byte) (*User, error) {
 	if code == http.StatusOK {
 		var jiraUser User
 		err := json.Unmarshal(body, &jiraUser)
