@@ -32,3 +32,12 @@ func execRequest(requestType, requestUrl string,
 	}
 	return resp.StatusCode, body
 }
+
+// RAW request to Jira API. The function takes full URL of resource,
+// type of request (GET, POST, PUT, ...) and body with required params.
+// Return values are - responce body and HTTP status code, so you cam manually
+// handle the answer from Jira and decode body to you own data type.
+func RawRequest(url, requestType string, body io.Reader) (int, []byte) {
+	return execRequest(requestType, url, body)
+
+}
