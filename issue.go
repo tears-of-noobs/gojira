@@ -50,21 +50,34 @@ func GetIssue(issueKey string) (*Issue, error) {
 	}
 }
 
+// Get labels
+func (issue *Issue) GetLabels() []string {
+	return issue.Fields.Labels
+}
+
 // Add labels to issue
 func (issue *Issue) AddLabel(labels []string) error {
 	for i, val := range labels {
-		labels[i] = fmt.Sprintf(`"%s"`, val)
+		labels[i] = fmt.Sprintf(`{"add": "%s"}`, val)
 	}
-	updateParams := []byte(fmt.Sprintf(`{
-		"update": {
-			"fields": {
-				"labels": [ %s ],
-			}
-		}
-	}`, strings.Join(labels, ",")))
-	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issue.Key)
+	return updateLabelsHelper(labels, issue.Key)
+}
+
+// Remove labels to issue
+func (issue *Issue) RemoveLabel(labels []string) error {
+	for i, val := range labels {
+		labels[i] = fmt.Sprintf(`{"remove": "%s"}`, val)
+	}
+
+	return updateLabelsHelper(labels, issue.Key)
+}
+
+func updateLabelsHelper(labels []string, issueKey string) error {
+	updateParams := []byte(fmt.Sprintf(`{ "update": { "labels": [ %s ] } }`,
+		strings.Join(labels, ", ")))
+	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issueKey)
 	code, body := execRequest("PUT", url, bytes.NewBuffer(updateParams))
-	if code == http.StatusOK {
+	if code == http.StatusNoContent {
 		return nil
 	} else {
 		return handleJiraError(body)
