@@ -20,6 +20,8 @@ gojira.BaseUrl = "http://JIRA_URL/rest/api/2"
 # Examples                                                                                                                           
                                                                                                                                      
 #### Searching
+
+Search issues in project TEST and assignee to USERNAME, order by JIRA key
 ```
 jqlString := "project%20%3D%20TEST"%20AND%20assignee%20%3D%20USERNAME%20order%20by%20key%20DESC"
 result, err := gojira.RawSearch(jqlString)
