@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 func handleJiraError(body []byte) error {
@@ -46,6 +47,27 @@ func GetIssue(issueKey string) (*Issue, error) {
 		return &issue, nil
 	} else {
 		return nil, handleJiraError(body)
+	}
+}
+
+// Add labels to issue
+func (issue *Issue) AddLabel(labels []string) error {
+	for i, val := range labels {
+		labels[i] = fmt.Sprintf(`"%s"`, val)
+	}
+	updateParams := []byte(fmt.Sprintf(`{
+		"update": {
+			"fields": {
+				"labels": [ %s ],
+			}
+		}
+	}`, strings.Join(labels, ",")))
+	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issue.Key)
+	code, body := execRequest("PUT", url, bytes.NewBuffer(updateParams))
+	if code == http.StatusOK {
+		return nil
+	} else {
+		return handleJiraError(body)
 	}
 }
 
