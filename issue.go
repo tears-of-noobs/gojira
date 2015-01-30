@@ -245,7 +245,7 @@ func (issue *Issue) UpdateComment(id int, comment io.Reader) (*Comment, error) {
 }
 
 // Remove comment from issue
-func (issue *Issue) DeleteComment(id int) error {
+func (issue *Issue) DeleteComment(id int64) error {
 	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseUrl, issue.Key, id)
 	code, body := execRequest("DELETE", url, nil)
 	if code == http.StatusNoContent {
