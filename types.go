@@ -73,6 +73,7 @@ type IssueFields struct {
 	Created        string             `json:"created"`
 	Updated        string             `json:"updated"`
 	Labels         []string           `json:"labels"`
+	Assignee       IssueFieldCreator  `json:"assignee"`
 	Description    interface{}        `json:"description"`
 	IssueLinks     []IssueLink        `json:"issueLinks"`
 	Status         IssueStatus        `json:"status"`
