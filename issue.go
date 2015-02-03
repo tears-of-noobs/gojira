@@ -35,6 +35,7 @@ func CreateIssue(params io.Reader) (*Issue, error) {
 	}
 }
 
+// Get Issue by key
 func GetIssue(issueKey string) (*Issue, error) {
 	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issueKey)
 	code, body := execRequest("GET", url, nil)
