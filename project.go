@@ -47,13 +47,13 @@ func requestHelper(requestType, url string, data io.Reader) (interface{}, error)
 	}
 }
 
-func GetProjects() (*[]Project, error) {
+func GetProjects() ([]*Project, error) {
 	url := fmt.Sprintf("%s/project", BaseUrl)
 	result, err := requestHelper("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-	return result.(*[]Project), nil
+	return result.([]*Project), nil
 }
 
 func GetProject(projectKey string) (*Project, error) {
