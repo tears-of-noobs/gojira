@@ -3,7 +3,6 @@ package gojira
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -29,45 +28,33 @@ type ProjectCategory struct {
 	Description string `json:"description"`
 }
 
-type ProjectComponents struct {
-	BaseFields
-}
-
-func requestHelper(requestType, url string, data io.Reader) (interface{}, error) {
-	code, body := execRequest(requestType, url, data)
+func GetProjects() ([]*Project, error) {
+	url := fmt.Sprintf("%s/project", BaseUrl)
+	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
-		var result interface{}
-		err := json.Unmarshal(body, &result)
+		var projects []*Project
+		err := json.Unmarshal(body, &projects)
 		if err != nil {
 			return nil, err
 		}
-		return &result, nil
+		return projects, nil
 	} else {
 		return nil, handleJiraError(body)
 	}
 }
 
-func GetProjects() ([]*Project, error) {
-	url := fmt.Sprintf("%s/project", BaseUrl)
-	result, err := requestHelper("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	return result.([]*Project), nil
-}
-
 func GetProject(projectKey string) (*Project, error) {
 	url := fmt.Sprintf("%s/project/%s", BaseUrl, projectKey)
-	result, err := requestHelper("GET", url, nil)
-	if err != nil {
-		return nil, err
+	code, body := execRequest("GET", url, nil)
+	if code == http.StatusOK {
+		var project Project
+		err := json.Unmarshal(body, &project)
+		if err != nil {
+			return nil, err
+		}
+		return &project, nil
+	} else {
+		return nil, handleJiraError(body)
 	}
-	return result.(*Project), nil
-}
 
-/*
-func (project *Project) GetComponents() (*[]ProjectComponents, error) {
-	url := fmt.Sprintf("%s/project/%s/components", BaseUrl, project.Key)
-	result, err := requestHelper("GET", url, nil)
 }
-*/
