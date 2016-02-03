@@ -3,41 +3,78 @@ package gojira
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 )
 
-func handleJiraError(body []byte) error {
-	errorAnswer := ApiError{}
-	err := json.Unmarshal(body, &errorAnswer)
-	if err != nil {
-		return err
-	}
-	return errors.New(errorAnswer.String())
+type Issue struct {
+	BaseFields
+	Key    string      `json:"key"`
+	Fields IssueFields `json:fields"`
+}
+
+type IssueFields struct {
+	Summary        string             `json:"summary"`
+	Progress       IssueFieldProgress `json:"progress"`
+	IssueType      IssueType          `json:"issuetype"`
+	ResolutionDate interface{}        `json:"resolutiondate"`
+	Timespent      interface{}        `json:"timespent"`
+	Creator        IssueFieldCreator  `json:"creator"`
+	Created        string             `json:"created"`
+	Updated        string             `json:"updated"`
+	Labels         []string           `json:"labels"`
+	Assignee       IssueFieldCreator  `json:"assignee"`
+	Description    interface{}        `json:"description"`
+	IssueLinks     []IssueLink        `json:"issueLinks"`
+	Status         IssueStatus        `json:"status"`
+}
+
+type IssueFieldProgress struct {
+	Progress int `json:"progress"`
+	Total    int `json:"total"`
+}
+
+type IssueFieldCreator struct {
+	Self         string            `json:"self"`
+	Name         string            `json:"name"`
+	EmailAddress string            `json:"emailAddress"`
+	AvatarUrls   map[string]string `json:"avatarUrls"`
+	DisplayName  string            `json:"displayName"`
+	Active       bool              `json:"active"`
+}
+
+type IssueType struct {
+	BaseFields
+	Description string `json:"description"`
+	IconUrl     string `json:"iconURL"`
+	Name        string `json:"name"`
+	Subtask     bool   `json:"subtask"`
+}
+
+type IssueStatus struct {
+	BaseFields
+	Name string `json:"name"`
 }
 
 func CreateIssue(params io.Reader) (*Issue, error) {
-	url := fmt.Sprintf("%s/issue", BaseUrl)
+	url := fmt.Sprintf("%s/issue", BaseURL)
 	code, body := execRequest("POST", url, params)
 	if code == http.StatusCreated {
-		answer := make(map[string]string)
-		err := json.Unmarshal(body, &answer)
+		response := make(map[string]string)
+		err := json.Unmarshal(body, &response)
 		if err != nil {
 			return nil, err
 		}
 
-		return GetIssue(answer["key"])
-	} else {
-		return nil, handleJiraError(body)
+		return GetIssue(response["key"])
 	}
+	return nil, handleJiraError(body)
 }
 
-// Get Issue by key
+// GetIssue - return issue by key
 func GetIssue(issueKey string) (*Issue, error) {
-	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issueKey)
+	url := fmt.Sprintf("%s/issue/%s", BaseURL, issueKey)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var issue Issue
@@ -46,17 +83,16 @@ func GetIssue(issueKey string) (*Issue, error) {
 			return nil, err
 		}
 		return &issue, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
-// Get labels
+// GetLabels - return labels from issue
 func (issue *Issue) GetLabels() []string {
 	return issue.Fields.Labels
 }
 
-// Add labels to issue
+// AddLabel - add label to issue
 func (issue *Issue) AddLabel(labels []string) error {
 	for i, val := range labels {
 		labels[i] = fmt.Sprintf(`{"add": "%s"}`, val)
@@ -73,39 +109,23 @@ func (issue *Issue) RemoveLabel(labels []string) error {
 	return updateLabelsHelper(labels, issue.Key)
 }
 
-func updateLabelsHelper(labels []string, issueKey string) error {
-	updateParams := []byte(fmt.Sprintf(`{ "update": { "labels": [ %s ] } }`,
-		strings.Join(labels, ", ")))
-	url := fmt.Sprintf("%s/issue/%s", BaseUrl, issueKey)
-	code, body := execRequest("PUT", url, bytes.NewBuffer(updateParams))
-	if code == http.StatusNoContent {
-		return nil
-	} else {
-		return handleJiraError(body)
-	}
-}
-
-// Assign issue to another name
+// Assignee - assign issue to another name
 func (issue *Issue) Assignee(name string) error {
-	params := make(map[string]string)
-	params["name"] = name
-	b, err := json.Marshal(params)
+	encodedParams, err := json.Marshal(map[string]string{"name": name})
 	if err != nil {
 		return err
 	}
-	buff := bytes.NewBuffer(b)
-	url := fmt.Sprintf("%s/issue/%s/assignee", BaseUrl, issue.Key)
-	code, body := execRequest("PUT", url, buff)
+	url := fmt.Sprintf("%s/issue/%s/assignee", BaseURL, issue.Key)
+	code, body := execRequest("PUT", url, bytes.NewBuffer(encodedParams))
 	if code == http.StatusNoContent {
 		return nil
-	} else {
-		return handleJiraError(body)
 	}
+	return handleJiraError(body)
 }
 
-// Get all worklogs of issue
+// GetWorklogs - get all worklogs from issue
 func (issue *Issue) GetWorklogs() (*Worklogs, error) {
-	url := fmt.Sprintf("%s/issue/%s/worklog", BaseUrl, issue.Key)
+	url := fmt.Sprintf("%s/issue/%s/worklog", BaseURL, issue.Key)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var jiraWorklogs Worklogs
@@ -114,14 +134,13 @@ func (issue *Issue) GetWorklogs() (*Worklogs, error) {
 			return nil, err
 		}
 		return &jiraWorklogs, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
-// Get worklog of issue by ID
+// GetWorklog - return worklog from issue by ID
 func (issue *Issue) GetWorklog(id int) (*Worklog, error) {
-	url := fmt.Sprintf("%s/issue/%s/worklog/%d", BaseUrl, issue.Key, id)
+	url := fmt.Sprintf("%s/issue/%s/worklog/%d", BaseURL, issue.Key, id)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var jiraWorklog Worklog
@@ -130,33 +149,31 @@ func (issue *Issue) GetWorklog(id int) (*Worklog, error) {
 			return nil, err
 		}
 		return &jiraWorklog, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
-// Logging work in issue with comment
+// SetWorklog - logging work in issue with comment
 func (issue *Issue) SetWorklog(timeSpent, comment string) error {
-	worklog := make(map[string]string)
-	worklog["timeSpent"] = timeSpent
-	worklog["comment"] = comment
-	b, err := json.Marshal(worklog)
+	worklog := map[string]string{
+		"timeSpent": timeSpent,
+		"comment":   comment,
+	}
+	encodedParams, err := json.Marshal(worklog)
 	if err != nil {
 		return err
 	}
-	buff := bytes.NewBuffer(b)
-	url := fmt.Sprintf("%s/issue/%s/worklog", BaseUrl, issue.Key)
-	code, body := execRequest("POST", url, buff)
+	url := fmt.Sprintf("%s/issue/%s/worklog", BaseURL, issue.Key)
+	code, body := execRequest("POST", url, bytes.NewBuffer(encodedParams))
 	if code == http.StatusCreated {
 		return nil
-	} else {
-		return handleJiraError(body)
 	}
+	return handleJiraError(body)
 }
 
-// Return available transitions for issue
+// GetTransitions - return available transitions for issue
 func (issue *Issue) GetTransitions() (*Transitions, error) {
-	url := fmt.Sprintf("%s/issue/%s/transitions", BaseUrl, issue.Key)
+	url := fmt.Sprintf("%s/issue/%s/transitions", BaseURL, issue.Key)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var jiraTransitions Transitions
@@ -165,25 +182,22 @@ func (issue *Issue) GetTransitions() (*Transitions, error) {
 			return nil, err
 		}
 		return &jiraTransitions, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
 func (issue *Issue) SetTransition(transition io.Reader) error {
-	url := fmt.Sprintf("%s/issue/%s/transitions", BaseUrl, issue.Key)
+	url := fmt.Sprintf("%s/issue/%s/transitions", BaseURL, issue.Key)
 	code, body := execRequest("POST", url, transition)
 	if code == http.StatusNoContent {
 		return nil
-	} else {
-		return handleJiraError(body)
 	}
-
+	return handleJiraError(body)
 }
 
-// Return all comments for issue
+// GetComments - return all comments for issue
 func (issue *Issue) GetComments() (*Comments, error) {
-	url := fmt.Sprintf("%s/issue/%s/comment", BaseUrl, issue.Key)
+	url := fmt.Sprintf("%s/issue/%s/comment", BaseURL, issue.Key)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var jiraComments Comments
@@ -192,14 +206,13 @@ func (issue *Issue) GetComments() (*Comments, error) {
 			return nil, err
 		}
 		return &jiraComments, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
-// Return one comment by ID
+// GetComment - return one comment by ID
 func (issue *Issue) GetComment(id int) (*Comment, error) {
-	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseUrl, issue.Key, id)
+	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseURL, issue.Key, id)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var jiraComment Comment
@@ -208,14 +221,13 @@ func (issue *Issue) GetComment(id int) (*Comment, error) {
 			return nil, err
 		}
 		return &jiraComment, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
-// Add comment in issue
+// SetComment - add comment in issue
 func (issue *Issue) SetComment(comment io.Reader) (*Comment, error) {
-	url := fmt.Sprintf("%s/issue/%s/comment", BaseUrl, issue.Key)
+	url := fmt.Sprintf("%s/issue/%s/comment", BaseURL, issue.Key)
 	code, body := execRequest("POST", url, comment)
 	if code == http.StatusCreated {
 		var jiraComment Comment
@@ -224,14 +236,15 @@ func (issue *Issue) SetComment(comment io.Reader) (*Comment, error) {
 			return nil, err
 		}
 		return &jiraComment, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
-// Update existing comment by id
-func (issue *Issue) UpdateComment(id int, comment io.Reader) (*Comment, error) {
-	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseUrl, issue.Key, id)
+// UpdateComment - update existing comment by id
+func (issue *Issue) UpdateComment(
+	id int, comment io.Reader,
+) (*Comment, error) {
+	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseURL, issue.Key, id)
 	code, body := execRequest("PUT", url, comment)
 	if code == http.StatusOK {
 		var jiraComment Comment
@@ -240,18 +253,16 @@ func (issue *Issue) UpdateComment(id int, comment io.Reader) (*Comment, error) {
 			return nil, err
 		}
 		return &jiraComment, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
-// Remove comment from issue
+// DeleteComment - remove comment from issue
 func (issue *Issue) DeleteComment(id int64) error {
-	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseUrl, issue.Key, id)
+	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseURL, issue.Key, id)
 	code, body := execRequest("DELETE", url, nil)
 	if code == http.StatusNoContent {
 		return nil
-	} else {
-		return handleJiraError(body)
 	}
+	return handleJiraError(body)
 }

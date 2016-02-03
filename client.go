@@ -6,12 +6,13 @@ import (
 	"net/http"
 )
 
-var BaseUrl string
+var BaseURL string
 var Username string
 var Password string
 
-func execRequest(requestType, requestUrl string,
-	data io.Reader) (int, []byte) {
+func execRequest(
+	requestType, requestUrl string, data io.Reader,
+) (int, []byte) {
 
 	client := &http.Client{}
 	req, err := http.NewRequest(requestType, requestUrl, data)
