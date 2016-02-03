@@ -28,3 +28,15 @@ func updateLabelsHelper(labels []string, issueKey string) error {
 	}
 	return handleJiraError(body)
 }
+
+func getUserHelper(code int, body []byte) (*User, error) {
+	if code == http.StatusOK {
+		var jiraUser User
+		err := json.Unmarshal(body, &jiraUser)
+		if err != nil {
+			return nil, err
+		}
+		return &jiraUser, nil
+	}
+	return nil, handleJiraError(body)
+}

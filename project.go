@@ -29,7 +29,7 @@ type ProjectCategory struct {
 }
 
 func GetProjects() ([]*Project, error) {
-	url := fmt.Sprintf("%s/project", BaseUrl)
+	url := fmt.Sprintf("%s/project", BaseURL)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var projects []*Project
@@ -38,13 +38,12 @@ func GetProjects() ([]*Project, error) {
 			return nil, err
 		}
 		return projects, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
 func GetProject(projectKey string) (*Project, error) {
-	url := fmt.Sprintf("%s/project/%s", BaseUrl, projectKey)
+	url := fmt.Sprintf("%s/project/%s", BaseURL, projectKey)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		var project Project
@@ -53,8 +52,6 @@ func GetProject(projectKey string) (*Project, error) {
 			return nil, err
 		}
 		return &project, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
-
+	return nil, handleJiraError(body)
 }

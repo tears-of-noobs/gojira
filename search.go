@@ -7,13 +7,12 @@ import (
 )
 
 func RawSearch(jql string) ([]byte, error) {
-	url := fmt.Sprintf("%s/search?jql=%s", BaseUrl, jql)
+	url := fmt.Sprintf("%s/search?jql=%s", BaseURL, jql)
 	code, body := execRequest("GET", url, nil)
 	if code == http.StatusOK {
 		return body, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
 
 type Filter struct {
@@ -21,7 +20,7 @@ type Filter struct {
 }
 
 func FilterSearch(id int) ([]byte, error) {
-	url := fmt.Sprintf("%s/filter/%d", BaseUrl, id)
+	url := fmt.Sprintf("%s/filter/%d", BaseURL, id)
 	code, body := execRequest("GET", url, nil)
 	if code != http.StatusOK {
 		return nil, handleJiraError(body)
@@ -35,7 +34,6 @@ func FilterSearch(id int) ([]byte, error) {
 	code, body = execRequest("GET", filter.SearchUrl, nil)
 	if code == http.StatusOK {
 		return body, nil
-	} else {
-		return nil, handleJiraError(body)
 	}
+	return nil, handleJiraError(body)
 }
