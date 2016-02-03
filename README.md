@@ -22,7 +22,7 @@ gojira.BaseUrl = "http://JIRA_URL/rest/api/2"
 #### Searching
 
 Search issues in project TEST and assignee to USERNAME, order by JIRA key
-```
+```go
 jqlString := "project%20%3D%20TEST"%20AND%20assignee%20%3D%20USERNAME%20order%20by%20key%20DESC"
 result, err := gojira.RawSearch(jqlString)
 if err != nil {
@@ -41,7 +41,7 @@ for _, issue := range jiraIssues.Issues {
 ```
 
 #### Get issue by issue key and view all comments:                                                                                   
-```                                                                                                                                  
+```go
 issue, err := gojira.GetIssue("TEST-123")                                                                                            
 if err != nil {                                                                                                                      
     fmt.Printf("%s\n", err)                                                                                                          
@@ -57,7 +57,7 @@ for _, comment := range comments.Comments {
 ```                                                                                                                                  
                                                                                                                                      
 #### Get comment by comment id                                                                                                       
-```                                                                                                                                  
+```go                                                                                                                                 
 issue, err := gojira.GetIssue("TEST-123")                                                                                            
 if err != nil {                                                                                                                      
     fmt.Printf("%s\n", err)                                                                                                          
@@ -73,7 +73,7 @@ fmt.Printf("%v\n", comment)
                                                                                                                                      
 #### Write comment to issue                                                                                                          
                                                                                                                                      
-```                                                                                                                                  
+```go                                                                                                                                 
 issue, err := gojira.GetIssue("TEST-123")                                                                                            
 if err != nil {                                                                                                                      
     fmt.Printf("%s\n", err)                                                                                                          
@@ -98,7 +98,7 @@ fmt.Printf("%v\n", comment.Comment)
 ```                                                                                                                                  
                                                                                                                                      
 #### Delete comment                                                                                                                  
-```                                                                                                                                  
+```go                                                                                                                                 
 issue, err := gojira.GetIssue("TEST-123")                                                                                            
 if err != nil {                                                                                                                      
     fmt.Printf("%s\n", err)                                                                                                          
@@ -114,7 +114,7 @@ fmt.Println("Comment deleted")
 
 
 #### Logging work
-```
+```go
 issue, err := gojira.GetIssue("TEST-123")                                                                                            
 if err != nil {                                                                                                                      
     fmt.Printf("%s\n", err)                                                                                                          
