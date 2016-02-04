@@ -226,9 +226,14 @@ func (issue *Issue) GetComment(id int) (*Comment, error) {
 }
 
 // SetComment - add comment in issue
-func (issue *Issue) SetComment(comment io.Reader) (*Comment, error) {
+func (issue *Issue) SetComment(comment *Comment) (*Comment, error) {
 	url := fmt.Sprintf("%s/issue/%s/comment", BaseURL, issue.Key)
-	code, body := execRequest("POST", url, comment)
+	encodedParams, err := json.Marshal(comment)
+	if err != nil {
+		return nil, err
+	}
+
+	code, body := execRequest("POST", url, bytes.NewBuffer(encodedParams))
 	if code == http.StatusCreated {
 		var jiraComment Comment
 		err := json.Unmarshal(body, &jiraComment)
