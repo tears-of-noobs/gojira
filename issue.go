@@ -247,10 +247,15 @@ func (issue *Issue) SetComment(comment *Comment) (*Comment, error) {
 
 // UpdateComment - update existing comment by id
 func (issue *Issue) UpdateComment(
-	id int, comment io.Reader,
+	id int, comment *Comment,
 ) (*Comment, error) {
+
 	url := fmt.Sprintf("%s/issue/%s/comment/%d", BaseURL, issue.Key, id)
-	code, body := execRequest("PUT", url, comment)
+	encodedParams, err := json.Marshal(comment)
+	if err != nil {
+		return nil, err
+	}
+	code, body := execRequest("PUT", url, bytes.NewBuffer(encodedParams))
 	if code == http.StatusOK {
 		var jiraComment Comment
 		err := json.Unmarshal(body, &jiraComment)

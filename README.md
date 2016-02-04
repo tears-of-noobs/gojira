@@ -80,16 +80,28 @@ if err != nil {
     os.Exit(1)                                                                                                                       
     }                                                                                                                                
 // Prepare comment                                                                                                                   
-var b = []byte(`{                                                                                                                    
-    "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.",
-    "visibility": {                                                                                                                  
-        "type": "role",                                                                                                              
-        "value": "Administrators"                                                                                                    
-    }                                                                                                                                
-}`)                                                                                                                                  
-newComment := bytes.NewBuffer(b)                                                                                                     
-comment, err := issue.SetComments(newComment)                                                                                        
+newComment := &gojira.Comment{Body: "test comment"} 
+
+comment, err := issue.SetComment(newComment)                                                                                        
+if err != nil {                                                                                                                      
+    fmt.Printf("%s\n", err)                                                                                                          
+    os.Exit(1)                                                                                                                       
+}                                                                                                    
+```
+
+#### Update existing comment in issue
+
 // You also may use UpdateComment(id int, comment io.Reader) to update exist comment by id                                           
+```go                                                                                                                                 
+issue, err := gojira.GetIssue("TEST-123")                                                                                            
+if err != nil {                                                                                                                      
+    fmt.Printf("%s\n", err)                                                                                                          
+    os.Exit(1)                                                                                                                       
+    }                                                                                                                                
+// Prepare comment                                                                                                                   
+newComment := &gojira.Comment{Body: "test comment"} 
+
+comment, err := issue.UpdateComment(123456, newComment)                                                                                        
 if err != nil {                                                                                                                      
     fmt.Printf("%s\n", err)                                                                                                          
     os.Exit(1)                                                                                                                       
