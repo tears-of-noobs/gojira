@@ -123,6 +123,30 @@ func (issue *Issue) Assignee(name string) error {
 	return handleJiraError(body)
 }
 
+// SetSummary - set new summary value
+func (issue *Issue) SetSummary(summary string) error {
+	encodedParams, err := json.Marshal(
+		map[string]interface{}{
+			"update": map[string]interface{}{
+				"summary": []map[string]interface{}{
+					{
+						"set": summary,
+					},
+				},
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	url := fmt.Sprintf("%s/issue/%s", BaseURL, issue.Key)
+	code, body := execRequest("PUT", url, bytes.NewBuffer(encodedParams))
+	if code == http.StatusNoContent {
+		return nil
+	}
+	return handleJiraError(body)
+}
+
 // GetWorklogs - get all worklogs from issue
 func (issue *Issue) GetWorklogs() (*Worklogs, error) {
 	url := fmt.Sprintf("%s/issue/%s/worklog", BaseURL, issue.Key)
