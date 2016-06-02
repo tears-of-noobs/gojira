@@ -276,3 +276,12 @@ func (issue *Issue) DeleteComment(id int64) error {
 	}
 	return handleJiraError(body)
 }
+
+func (issue *Issue) Delete() error {
+	url := fmt.Sprintf("%s/issue/%s", BaseURL, issue.Key)
+	code, body := execRequest("DELETE", url, nil)
+	if code != http.StatusNoContent {
+		return handleJiraError(body)
+	}
+	return nil
+}
